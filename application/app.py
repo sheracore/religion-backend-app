@@ -4,8 +4,7 @@ import logging.config
 
 from flask import Flask
 
-from application.extensions import db, ma, migrate, jwt
-# from models.setting import Setting
+from application.extensions import db, ma, migrate,jwt
 
 
 def create_app(config_filename):
@@ -20,7 +19,6 @@ def create_app(config_filename):
 
     db.init_app(app)
     ma.init_app(app)
-    # cors.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
 
@@ -37,10 +35,22 @@ def create_app(config_filename):
 
 
 # def get_config_args(app):
-    """
-    set config param from setting database 
-    """
-    # with app.app_context():
-    #     setting = Setting.query.first()
-    #     if setting:
-    #         app.config['SETTING'] = Setting.query.first().data
+#     """
+#     set config param from setting database 
+#     """
+#     # TODO :solve problem of start management
+#     with app.app_context():
+#         try:
+#             setting = Setting.query.first()
+#             if setting:
+#                 app.config['SETTING'] = Setting.query.first().data
+#         except:
+#             pass
+
+
+# @task_prerun.connect
+# def on_task_init(*args, **kwargs):
+#     """
+#     Handle multiprocessing in sqlalchemy
+#     """
+#     db.engine.dispose()
