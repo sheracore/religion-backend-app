@@ -5,7 +5,7 @@ from flask_jwt_extended import (
     jwt_required, create_access_token, get_jwt_identity)
 
 from application.extensions import db
-from models.user import User, UserSchema
+from models.user import User,UserSchema
 
 blueprint = Blueprint('user', __name__, url_prefix='/api/v1')
 
@@ -27,8 +27,6 @@ def login():
 
     if not user:
         return jsonify(message_code=1002), 404
-    if user.locked:
-        return jsonify(message_code=1003), 401
 
     if check_password_hash(user.hashed_password, password):
         access_token = create_access_token(identity=user.id)
@@ -58,10 +56,7 @@ def list_users():
 @jwt_required
 def create_user():
     username = request.json.get('username')
-    # email = request.json.get('email')
     password = request.json.get('password')
-    # role_id = request.json.get('role_id')
-    # locked = request.json.get('locked', False)
 
     if not username or not password:
         return jsonify(message_code=1005), 400
@@ -69,21 +64,18 @@ def create_user():
     if username and User.query.filter_by(username=username).first():
         return jsonify(message_code=1007), 409
 
-    # if email and User.query.filter_by(email=email).first():
-    #     return jsonify(message_code=1008), 409
-
-    user = User(username=username, email=email, role_id=role_id, locked=locked)
+    user = User(username=username)
     user.hashed_password = user.hash_password(password)
     db.session.add(user)
     db.session.commit()
-    return jsonify(UserSchema().dump(user).data), 201
+    return jsonify(UserSchema().dump(user)), 201
 
 
 @blueprint.route('/user/<id>', methods=['GET'])
 @jwt_required
 def get_user(id):
     user = User.query.get_or_404(id)
-    return jsonify(UserSchema().dump(user).data)
+    return jsonify(UserSchema().dump(user))
 
 
 @blueprint.route('/user/<id>', methods=['DELETE'])
@@ -92,7 +84,7 @@ def delete_user(id):
     user = User.query.get_or_404(id)
     db.session.delete(user)
     db.session.commit()
-    return jsonify(UserSchema().dump(user).data)
+    return jsonify(UserSchema().dump(user))
 
 
 @blueprint.route('/user/<id>', methods=['PUT'])
@@ -100,9 +92,7 @@ def delete_user(id):
 def update_user(id):
     user = User.query.get_or_404(id)
     username = request.json.get('username')
-    email = request.json.get('email')
     password = request.json.get('password')
-    role_id = request.json.get('role_id')
 
     if username and user.username != username:
         duplicate = User.query.filter_by(username=username).first()
@@ -110,24 +100,6 @@ def update_user(id):
             return jsonify(message_code=1007), 409
         user.username = username
 
-    if email and user.email != email:
-        duplicate = User.query.filter_by(email=email).first()
-        if duplicate:
-            return jsonify(message_code=1008), 409
-        user.email = email
-
-    if 'locked' in request.json:
-        user.locked = request.json.get('locked')
-
-    if role_id:
-        user.role_id = role_id
-
     db.session.commit()
-    return jsonify(UserSchema().dump(user).data), 200
+    return jsonify(UserSchema().dump(user)), 200
 
-
-@blueprint.route('/roles', methods=['GET'])
-@jwt_required
-def list_roles():
-    roles = Role.query.all()
-    return jsonify(RoleSchema(many=True).dump(roles).data)

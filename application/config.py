@@ -12,22 +12,9 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'SQLALCHEMY_DATABASE_URI', 'postgres://admin:islamic9251@localhost/religion')
 
-    # UPLOAD_DIR = os.environ.get('UPLOAD_DIR', '/tmp/')
-
-    # AGENT_URL = 'http://{}:8080/api/v1/{}/scan/'
-
     INSTALLED_APPS = [
         'user',
-        # 'result',
-        # 'report',
-        # 'user',
-        # 'setting',
     ]
-
-    # CELERY_BROKER_URL = os.environ.get(
-    #     'CELERY_BROKER_URL', 'redis://localhost:6379/0')
-    # CELERY_RESULT_BACKEND = os.environ.get(
-    #     'CELERY_RESULT_BACKEND', 'db+postgresql://multiscanner:U&r5fE$8@localhost/multiscanner')
 
     # MAX_DOWNLOAD_SIZE = 100 * 1024 * 1024  # 100 MB
 
