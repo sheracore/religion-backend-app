@@ -15,21 +15,24 @@ def upload_video_pic():
         return jsonify({"Error":"File dose not exist"}), 400
     
     user_id = request.args.get('user_id')
+    file = request.files['file']
+    title = request.form.get('title', 'titel')
+
     if not user_id:
         return jsonify({"Error":"Insert user id"}), 400
-    # if file.filename == '':
-    #     return jsonify({"filename":"error"}), 400
     
-    file = request.files['file']
     if file :
         filename = secure_filename(file.filename)
         url_file = current_app.config['UPLOAD_FILE']+ filename
         file.save(url_file)
         print("file saved")
-
-    description = request.form.get('description', filename)
     
-    video = Video(text=description,video_url=url_file, picture_name=filename,user_id=user_id)
+    text = request.form.get('text', filename)
+    try:
+        video = Video(title=title, text=text,video_url=url_file, thumbnaiUrl=filename,user_id=user_id)
+    except Exception as e:
+        return jsonify({"Error" : e}), 400 
+
     db.session.add(video)
     db.session.commit()
 
