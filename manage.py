@@ -1,7 +1,6 @@
 import json
-from datetime import datetime
 
-import requests
+from datetime import datetime
 from flask_script import Manager
 from flask_migrate import MigrateCommand
 
@@ -13,6 +12,7 @@ from models.user import User
 
 app = create_app('application.config.DeploymentConfig')
 manager = Manager(app)
+manager.add_command('db', MigrateCommand)
 
 
 

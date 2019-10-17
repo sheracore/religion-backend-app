@@ -14,7 +14,10 @@ class Config(object):
 
     INSTALLED_APPS = [
         'user',
+        'video',
     ]
+
+    UPLOAD_FILE = os.environ.get('UPLOAD_FILE', '/home/mohamad/Desktop/myprojects/flask_projects/religion_app/updoad/')
 
     # MAX_DOWNLOAD_SIZE = 100 * 1024 * 1024  # 100 MB
 
