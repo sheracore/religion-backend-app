@@ -1,12 +1,15 @@
 from werkzeug.security import generate_password_hash
-
+from models.video import Video
 from application.extensions import db, ma
 
 
 class User(db.Model):
+    __tablename__ = 'user'
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     hashed_password = db.Column(db.String(512), unique=True, nullable=False)
+    videos = db.relationship('Video', backref='user')
 
     def __repr__(self):
         return self.username
@@ -18,4 +21,3 @@ class User(db.Model):
 class UserSchema(ma.ModelSchema):
     class Meta:
         model = User
-        exclude = ['hashed_password']
