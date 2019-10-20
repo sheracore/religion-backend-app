@@ -4,6 +4,7 @@ from sqlalchemy import or_
 from flask_jwt_extended import (
     jwt_required, create_access_token, get_jwt_identity)
 
+from sqlalchemy import or_
 from application.extensions import db
 from models.user import User,UserSchema
 
@@ -13,27 +14,26 @@ blueprint = Blueprint('user', __name__, url_prefix='/api/v1')
 @blueprint.route('/user/login/', methods=['POST'])
 def login():
     if not request.is_json:
-        return jsonify({"msg": "Missing JSON in request"}), 400
+        return jsonify({"Error":[{"Type":"I/O","message_error":"message error is not json type"}]}), 400
 
-    username = request.json.get('username', None)
-    password = request.json.get('password', None)
+    username = request.json.get('username')
+    password = request.json.get('password')
 
     if not username:
-        return jsonify(message_code=1001), 400
+        return jsonify({"Error":[{"Type":"I/O","message_error":" username is not inserted"}]}), 400
     if not password:
-        return jsonify(message_code=1001), 400
+        return jsonify({"Error":[{"Type":"I/O","message_error":" password is not inserted"}]}), 400
 
     user = User.query.filter_by(username=username).first()
-
     if not user:
-        return jsonify(message_code=1002), 404
+        return jsonify({"Error":[{"Type":"business","message_error":"This user is not exist"}]}), 400
 
     if check_password_hash(user.hashed_password, password):
         access_token = create_access_token(identity=user.id)
         return jsonify(access_token=access_token,
-                       user=UserSchema().dump(user).data), 200
+                       user=UserSchema().dump(user)), 200
 
-    return jsonify(message_code=1004), 401
+    return jsonify({"Error":[{"Type":"business","message_error":"This user can't login"}]}), 400
 
 
 
@@ -44,12 +44,11 @@ def list_users():
     schema = UserSchema(many=True)
 
     if search:
-        users = User.query.filter(or_(User.email.ilike('%{}%'.format(
-            search)), User.username.ilike('%{}%'.format(search))))
-        return jsonify(schema.dump(users).data), 200
+        users = User.query.filter(User.username.ilike('%{}%'.format(search)))
+        return jsonify(schema.dump(users)), 200
 
     users = User.query.all()
-    return jsonify(schema.dump(users).data), 200
+    return jsonify(schema.dump(users)), 200
 
 
 @blueprint.route('/users', methods=['POST'])
@@ -59,10 +58,10 @@ def create_user():
     password = request.json.get('password')
 
     if not username or not password:
-        return jsonify(message_code=1005), 400
+        return jsonify({"Error":[{"Type":"I/O","message_error":"password or username is not inserted"}]}), 400
 
-    if username and User.query.filter_by(username=username).first():
-        return jsonify(message_code=1007), 409
+    if User.query.filter_by(username=username).first():
+        return jsonify({"Error":[{"Type":"business","message_error":"this username is not exist"}]}), 400
 
     user = User(username=username)
     user.hashed_password = user.hash_password(password)
@@ -84,7 +83,7 @@ def delete_user(id):
     user = User.query.get_or_404(id)
     db.session.delete(user)
     db.session.commit()
-    return jsonify(UserSchema().dump(user))
+    return jsonify(status="User deleted", user=UserSchema().dump(user))
 
 
 @blueprint.route('/user/<id>', methods=['PUT'])
@@ -97,9 +96,9 @@ def update_user(id):
     if username and user.username != username:
         duplicate = User.query.filter_by(username=username).first()
         if duplicate:
-            return jsonify(message_code=1007), 409
+            return jsonify({"Error":[{"Type":"business","message_error":"This username is not exist"}]}), 409
         user.username = username
 
     db.session.commit()
-    return jsonify(UserSchema().dump(user)), 200
+    return jsonify(status="User changed", user=UserSchema().dump(user)), 200
 

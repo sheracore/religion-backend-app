@@ -27,3 +27,4 @@ class User(db.Model):
 class UserSchema(ma.ModelSchema):
     class Meta:
         model = User
+        exclude = ["books","devices","sounds","videos"]
