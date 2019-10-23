@@ -16,7 +16,7 @@ pip install -r requirements.txt
 ## Usage
 
 ```python
-#import foobar
+#import 
 
 #In Progress
 ```
