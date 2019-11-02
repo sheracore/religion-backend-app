@@ -15,7 +15,6 @@ class User(db.Model):
     videos = db.relationship('Video', backref='user',cascade="all, delete-orphan",lazy=True)
     sounds = db.relationship('Sound', backref='user',cascade="all, delete-orphan",lazy=True)
     books = db.relationship('Book', backref='user',cascade="all, delete-orphan",lazy=True)
-    devices = db.relationship('Device', backref='user',cascade="all, delete-orphan",lazy=True)
 
     def __repr__(self):
         return self.username
@@ -27,4 +26,3 @@ class User(db.Model):
 class UserSchema(ma.ModelSchema):
     class Meta:
         model = User
-        exclude = ["books","devices","sounds","videos"]

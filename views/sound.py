@@ -1,50 +1,82 @@
-# from flask import jsonify, Blueprint, request
-# from werkzeug.security import check_password_hash
-# from sqlalchemy import or_
-# from flask_jwt_extended import (
-#     jwt_required, create_access_token, get_jwt_identity)
+from flask import Blueprint, request, jsonify
+from flask import current_app
+from models.user import User
+from flask_jwt_extended import jwt_required
+from models.category import Category
+from models.sound import Sound, SoundSchema
+from werkzeug.utils import secure_filename
+from application.extensions import db
 
-# from application.extensions import db
-# import os
-# from flask import Flask, request, redirect, url_for
-# from werkzeug.utils import secure_filename
-
-
-
-# blueprint = Blueprint('sound', __name__, url_prefix='/api/v1')
+blueprint = Blueprint('sound', __name__, url_prefix='/api/v1')
 
 
-# @blueprint.route('/sounds', methods=['POST'])
-# def upload_file():
-#     if 'file' not in request.files:
-#         return jsonify(message_text = No file part)
+@blueprint.route('/sound', methods=['POST'])
+@jwt_required
+def create_sound():
 
-#     file = request.files['file']
-#     if file.filename == '':
-#         return jsonify(message_text = No selected file)
-#     if file :
-#         filename = secure_filename(file.filename)
-#         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    if 'file' not in request.files:
+        return jsonify({"Error": [{"Type": "I/O", "message_error": "No file part"}]}), 400
 
-#     return jsonify(file_name = filename)
+    user_id = request.form.get('user_id')
+    category_id = request.form.get('category_id')
+    file = request.files['file']
+    name = request.form.get('name')
+    time = request.form.get('time')
+    singer = request.form.get('singer')
+
+    if not user_id:
+        return jsonify({"Error": [{"Type": "I/O", "message_error": "Insert user id"}]}), 400
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"Error": [{"Type": "business", "message_error": "user_id not found"}]}), 400
+    if not category_id:
+        return jsonify({"Error": [{"Type": "I/O", "message_error": "Insert category id"}]}), 400
+    category = Category.query.filter_by(id=category_id).first()
+    if not category:
+        return jsonify({"Error": [{"Type": "business", "message_error": "category_id not found"}]}), 400
+    if file.filename == '':
+        return jsonify({"Error": [{"Type": "I/O", "message_error": "No selected file"}]}), 400
+    if not name:
+        return jsonify({"Error": [{"Type": "I/O", "message_error": "Insert name"}]}), 400
+    if not time:
+        return jsonify({"Error": [{"Type": "I/O", "message_error": "Insert time"}]}), 400
+    if not singer:
+        return jsonify({"Error": [{"Type": "I/O", "message_error": "Insert singer"}]}), 400
+
+    if file:
+        filename = secure_filename(file.filename)
+        url_file = current_app.config['UPLOAD_FILE'] + filename
+        duplicate = Sound.query.filter_by(sound_url=url_file).first()
+        if duplicate:
+            return jsonify({"Error":[{"Type":"business","message_error":"This sound uploaded before"}]}), 409 
+        file.save(url_file)
+
+    sound = Sound(user_id=user_id, category_id=category_id,
+                  name=name, time=time, singer=singer, sound_url=url_file)
+
+    db.session.add(sound)
+    db.session.commit()
+
+    return jsonify(SoundSchema().dump(sound)), 201
 
 
-#     if 'file' not in request.files:
-#         return jsonify({"Error":"File dose not exist"}), 400
-#         # flash('No file part')
-#     file = request.files['file']
-#     # if file.filename == '':
-#     #     return jsonify({"filename":"error"}), 400
+@blueprint.route('/sound', methods=['GET'])
+@jwt_required
+def list_sound():
+    schema = SoundSchema(many=True)
 
-#     if file :
-#         filename = secure_filename(file.filename)
-#         url_file = current_app.config['UPLOAD_FILE']+ filename
-#         file.save(url_file)
-#         print("file saved")
-    
-    
-#     video = Video(name="xashen",video_url=url_file, picture_name=filename)
-#     db.session.add(video)
-#     db.session.commit()
+    page_number = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 20))
+    category_id = request.args.get('category_id', '')
 
-#     return jsonify({"filename" : filename}), 200
+    if category_id:
+        category = Category.query.filter_by(id=category_id).first()
+        if not category:
+            return jsonify({"Error": [{"Type": "business", "message_error": "category_id not found"}]}), 400
+        sound = Sound.query.filter_by(category_id=category_id).paginate(
+            page_number, per_page, False)
+    else:
+        sound = Sound.query.paginate(page_number, per_page, False)
+
+    items = SoundSchema(many=True).dump(sound.items)
+    return jsonify(items=items, total=sound.total)
