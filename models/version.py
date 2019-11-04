@@ -6,8 +6,8 @@ class Version(db.Model):
     __tablename__ = 'version'
 
     id = db.Column(db.Integer, primary_key=True)
-    minVersion = db.Column(db.Integer, nullable=True)
-    latest = db.Column(db.Integer, nullable=True)
+    minVersion = db.Column(db.String(80),nullable=True)
+    latest = db.Column(db.String(80),nullable=True)
 
 class VersionSchema(ma.ModelSchema):
     class Meta:

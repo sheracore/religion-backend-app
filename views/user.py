@@ -6,7 +6,7 @@ from flask_jwt_extended import (
 
 from sqlalchemy import or_
 from application.extensions import db
-from models.user import User,UserSchema
+from models.user import User, UserSchema
 
 blueprint = Blueprint('user', __name__, url_prefix='/api/v1')
 
@@ -14,27 +14,26 @@ blueprint = Blueprint('user', __name__, url_prefix='/api/v1')
 @blueprint.route('/user/login/', methods=['POST'])
 def login():
     if not request.is_json:
-        return jsonify({"Error":[{"Type":"I/O","message_error":"message error is not json type"}]}), 400
+        return jsonify({"Error": [{"Type": "I/O", "message_error": "message error is not json type"}]}), 400
 
     username = request.json.get('username')
     password = request.json.get('password')
 
     if not username:
-        return jsonify({"Error":[{"Type":"I/O","message_error":" username is not inserted"}]}), 400
+        return jsonify({"Error": [{"Type": "I/O", "message_error": " username is not inserted"}]}), 400
     if not password:
-        return jsonify({"Error":[{"Type":"I/O","message_error":" password is not inserted"}]}), 400
+        return jsonify({"Error": [{"Type": "I/O", "message_error": " password is not inserted"}]}), 400
 
     user = User.query.filter_by(username=username).first()
     if not user:
-        return jsonify({"Error":[{"Type":"business","message_error":"This user is not exist"}]}), 400
+        return jsonify(type="asdsa", message="sadjashkjdah"), 400
 
     if check_password_hash(user.hashed_password, password):
         access_token = create_access_token(identity=user.id)
         return jsonify(access_token=access_token,
                        user=UserSchema().dump(user)), 200
 
-    return jsonify({"Error":[{"Type":"business","message_error":"This user can't login"}]}), 400
-
+    return jsonify({"Error": [{"Type": "business", "message_error": "This user can't login"}]}), 400
 
 
 @blueprint.route('/users', methods=['GET'])
@@ -58,10 +57,10 @@ def create_user():
     password = request.json.get('password')
 
     if not username or not password:
-        return jsonify({"Error":[{"Type":"I/O","message_error":"password or username is not inserted"}]}), 400
+        return jsonify({"Error": [{"Type": "I/O", "message_error": "password or username is not inserted"}]}), 400
 
     if User.query.filter_by(username=username).first():
-        return jsonify({"Error":[{"Type":"business","message_error":"this username is not exist"}]}), 400
+        return jsonify({"Error": [{"Type": "business", "message_error": "this username is not exist"}]}), 400
 
     user = User(username=username)
     user.hashed_password = user.hash_password(password)
@@ -96,9 +95,8 @@ def update_user(id):
     if username and user.username != username:
         duplicate = User.query.filter_by(username=username).first()
         if duplicate:
-            return jsonify({"Error":[{"Type":"business","message_error":"This username is not exist"}]}), 409
+            return jsonify({"Error": [{"Type": "business", "message_error": "This username is not exist"}]}), 409
         user.username = username
 
     db.session.commit()
     return jsonify(status="User changed", user=UserSchema().dump(user)), 200
-

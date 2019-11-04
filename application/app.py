@@ -3,8 +3,9 @@ import logging
 import logging.config
 
 from flask import Flask
+from flask_cors import CORS
 
-from application.extensions import db, ma, migrate,jwt
+from application.extensions import db, ma, migrate, jwt
 
 
 def create_app(config_filename):
@@ -16,6 +17,7 @@ def create_app(config_filename):
     """
     app = Flask(__name__)
     app.config.from_object(config_filename)
+    CORS(app)
 
     db.init_app(app)
     ma.init_app(app)
@@ -36,7 +38,7 @@ def create_app(config_filename):
 
 # def get_config_args(app):
 #     """
-#     set config param from setting database 
+#     set config param from setting database
 #     """
 #     # TODO :solve problem of start management
 #     with app.app_context():

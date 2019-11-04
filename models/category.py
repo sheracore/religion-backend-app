@@ -15,3 +15,4 @@ class Category(db.Model):
 class CategorySchema(ma.ModelSchema):
     class Meta:
         model = Category
+        exclude = ['sounds', 'videos']
