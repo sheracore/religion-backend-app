@@ -8,7 +8,7 @@ flask-marshmallow==0.10.1
 Flask-Migrate==2.5.2
 Flask-Script==2.0.6
 Flask-SQLAlchemy==2.4.1
-idna==2.8
+idna==3.7
 itsdangerous==1.1.0
 Jinja2==2.11.3
 Mako==1.1.0
