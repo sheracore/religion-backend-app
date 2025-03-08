@@ -2,7 +2,7 @@ alembic==1.2.1
 certifi==2024.7.4
 chardet==3.0.4
 Click==7.0
-Flask==1.1.1
+Flask==2.2.5
 Flask-JWT-Extended==3.24.0
 flask-marshmallow==0.10.1
 Flask-Migrate==2.5.2
