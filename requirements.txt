@@ -13,7 +13,7 @@ itsdangerous==1.1.0
 Jinja2==3.1.6
 Mako==1.1.0
 MarkupSafe==1.1.1
-marshmallow==3.2.1
+marshmallow==3.26.2
 marshmallow-sqlalchemy==0.19.0
 psycopg2==2.8.3
 PyJWT==2.4.0
